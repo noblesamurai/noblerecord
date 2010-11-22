@@ -15,14 +15,33 @@
  * along with NobleRecord.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-var common = require('src/common');
-var migration = require('src/migration');
-var model = require('src/model');
+var NobleRecord = require('./noblerecord').NobleRecord;
+var NobleMachine = require('noblemachine').NobleMachine;
 
-var NobleRecord = {};
+var command = process.argv[2];
 
-var sys = require('sys');
+var sys = require('sys'),
+	fs = require('fs');
 
-_.extend(NobleRecord, common, migration, model);
+sys.log(process.argv);
 
-exports.NobleRecord = NobleRecord;
+switch (command) {
+	case 'migrate':
+		global.NobleRecord = NobleRecord;
+		require(process.cwd() + '/db/migrate/foo');
+		break;
+
+	case 'make_schema':
+		var act = new NobleMachine(function() {
+			act.toNext(NobleRecord.Migration.recreate());
+		});
+
+		act.next(function(code) {
+			var fd = fs.openSync('db/schema.js', 'w');
+			fs.writeSync(fd, code);
+			fs.closeSync(fd);
+		});
+
+		act.start();
+		break;
+}
