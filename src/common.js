@@ -15,16 +15,19 @@
  * along with NobleRecord.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-var common = require('src/common');
-var migration = require('src/migration');
-var model = require('src/model');
+require('./lib/underscore');
+require('./lib/inflection');
 
-var NobleRecord = {};
+NobleMachine = require('noblemachine').NobleMachine;
 
 var sys = require('sys');
 
-_.extend(NobleRecord, common, migration, model);
-
-sys.log(Object.keys(NobleRecord));
-
-exports.NobleRecord = NobleRecord;
+// Configuration options..
+exports.config = {
+	database: null,
+	logger:  {
+		log: sys.log,
+		warning: sys.log,
+		error: sys.log
+	}
+}
