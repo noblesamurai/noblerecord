@@ -141,6 +141,8 @@ function queryAll(db, queries) {
 var Migration = function(opts) {
 	var me = this;
 
+	me.filename = null;
+
 	var db = common.config.database;
 
 	var up = new DatabaseDefinition();
@@ -149,13 +151,20 @@ var Migration = function(opts) {
 	if (opts.up) opts.up(up);
 	if (opts.down) opts.down(down);
 
+	if (Migration.currentFilename) {
+		me.filename = Migration.currentFilename;
+		up.queries.push("INSERT INTO tblSchemaMigrations SET `filename` = " + util.serialize(me.filename) + ";");
+		down.queries.push("DELETE FROM tblSchemaMigrations WHERE `filename` = " + util.serialize(me.filename) + ";");
+	}
+
 	_.extend(me, {
 		raise: function() {
 			return queryAll(db, up.queries);
 		},
+
 		lower: function() {
 			return queryAll(db, down.queries);
-		}
+		},
 	});
 
 	Migrations.push(me);
@@ -165,6 +174,8 @@ var Migration = function(opts) {
 
 // Recreates migration code from INFORMATION_SCHEMA.
 Migration.recreate = function() {
+	var db = common.config.database;
+
 	var act = new NobleMachine(function() {
 		var sql = "SELECT * FROM INFORMATION_SCHEMA.COLUMNS"
 				+ " WHERE TABLE_SCHEMA = '" + db.options.database + "';";
@@ -210,7 +221,6 @@ Migration.recreate = function() {
 		code += "  }\n";
 		code += "});\n";
 		
-		sys.log("\n"+code);
 		act.toNext(code);
 	});
 
@@ -221,3 +231,98 @@ _.extend(exports, {
 	Migrations: Migrations,
 	Migration: Migration
 });
+
+/**
+ * Create the migration metadata table if it doesn't already exist.
+ */
+Migrations.makeTable = function() {
+	var sql = "CREATE TABLE IF NOT EXISTS `tblSchemaMigrations` ("
+			+ "  `filename` VARCHAR(255) NOT NULL"
+			+ " ) ENGINE=INNODB;";
+	return common.config.database.query(sql);
+}
+
+/**
+ * Queries the database and emits array of all raised migrations.
+ */
+Migrations.getRaised = function() {
+	var db = common.config.database;
+
+	var act = new NobleMachine(function() {
+		act.toNext(Migrations.makeTable());
+	});
+
+	act.next(function() {
+		act.toNext(db.query("SELECT * FROM `tblSchemaMigrations`;"));
+	});
+
+	act.next(function(result) {
+		var filenames = result.map(function(datum) { return datum.filename; });
+
+		sys.log(filenames);
+		
+		var migrations = [];
+		Migrations.forEach(function(migr) {
+			if (filenames.indexOf(migr.filename) != -1) migrations.push(migr);
+		});
+
+		act.toNext(migrations);
+	});
+
+	return act;
+}
+
+/**
+ * Raise or lower the first or last migration as appropriate.
+ */
+Migration.apply = function(dir) {
+	var act = new NobleMachine(function() {
+		act.toNext(Migrations.getRaised());
+	});
+
+	act.next(function(raised) {
+		if (dir == 'raise') {
+			for (var i = 0; i < Migrations.length; i++) {
+				if (raised.indexOf(Migrations[i]) == -1) {
+					act.toNext(Migratons[i].raise());
+					break;
+				}
+			}
+		} else if (dir == 'lower') {
+			act.toNext(raised[raised.length-1].lower());
+		}
+	});
+
+	return act;
+}
+
+Migration.raise = function() { return Migration.apply('raise'); }
+Migration.lower = function() { return Migration.apply('lower'); }
+
+/**
+ * Raise or lower all extant migrations for which such an action is needed.
+ */
+Migrations.applyAll = function(dir) {
+	var act = new NobleMachine(function() {
+		act.toNext(Migrations.getRaised());
+	});
+
+	act.next(function(raised) {
+		if (dir == 'raise') {
+			Migrations.forEach(function(migr) {
+				if (raised.indexOf(migr) == -1) {
+					act.next(migr.raise());
+				}
+			});
+		} else if (dir == 'lower') {
+			raised.forEach(function(migr) {
+				act.next(migr.lower());
+			});
+		}
+	});
+
+	return act;
+}
+
+Migrations.raiseAll = function() { return Migrations.applyAll('raise') }
+Migrations.lowerAll = function() { return Migrations.applyAll('lower') }

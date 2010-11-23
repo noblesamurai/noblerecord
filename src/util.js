@@ -15,6 +15,8 @@
  * along with NobleRecord.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+var common = require('./common');
+
 /**
  * Pads a number to a two-char string if needed.
  * @param num Number to be padded.
@@ -30,9 +32,21 @@ function padNum(num) {
 /**
  * Converts Date object into strings of form "yyyy-mm-dd hh:mm:ss"
  */
-function makeDateStr(date) {
-    return (date.year + '-' + padNum(date.month+1) + '-' + padNum(date.date) + ' '
-            + padNum(date.hours) + ':' + padNum(date.minutes) + ':' + padNum(date.seconds));
+function makeDateStr(date, sep) {
+	if (sep === undefined) sep = true;
+
+	var year = date.getFullYear().toString(),
+		month = padNum(date.getMonth()+1),
+		day = padNum(date.getDate()),
+		hours = padNum(date.getHours()),
+		minutes = padNum(date.getMinutes()),
+		seconds = padNum(date.getSeconds());
+
+	if (sep) {
+		return year + '-' + month + '-' + day + ' ' + hours + ':' + minutes + ':' + seconds;
+	} else {
+		return year + month + day + hours + minutes + seconds;
+	}
 }
 
 /**
