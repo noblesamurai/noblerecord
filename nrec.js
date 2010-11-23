@@ -21,7 +21,11 @@ var common = require('./src/common'),
 var NobleRecord = require('./noblerecord').NobleRecord;
 var NobleMachine = require('noblemachine').NobleMachine;
 
-var command = process.argv.slice(2).join(' ');
+var sys = require('sys');
+
+var command = process.argv.slice(2, 4).join(' ');
+
+sys.log(command);
 
 var sys = require('sys'),
 	fs = require('fs');
@@ -104,6 +108,8 @@ switch (command) {
 		var fd = fs.openSync('db/migrate/' + filename, 'w');
 		fs.writeSync(fd, code);
 		fs.closeSync(fd);
+
+		logger.log("Generated new migration at `db/migrate/" + filename + "`.");
 		break;
 
 	case 'generate schema':

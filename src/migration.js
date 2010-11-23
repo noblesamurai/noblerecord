@@ -43,7 +43,7 @@ function columnToSQL(col) {
 	}
 
 	if (col.type == 'primary_key') {
-		sql += " PRIMARY KEY";
+		sql += " PRIMARY KEY AUTO_INCREMENT";
 	}
 
 	return sql;
@@ -94,6 +94,7 @@ var TableDefinition = function(tablename, context, definer) {
 	if (context == 'alter') {
 		_.extend(definitions, {
 			change_column: function(name, type, options) {
+				logger.log(sys.inspect(type));
 				var col = { name: name, type: type };
 				_.extend(col, options);
 
@@ -184,7 +185,7 @@ var DatabaseDefinition = function() {
 			me.act.next(t.act);
 		},
 
-		alter_table: function(name, definer) {
+		change_table: function(name, definer) {
 			var t = new TableDefinition(name, 'alter', definer);
 			me.act.next(t.act);
 		},
@@ -236,6 +237,24 @@ var Migration = function(opts) {
 	return me;
 }
 
+function makeColumnDefinition(col) {
+	var opts = {};
+
+	if (col['IS_NULLABLE'] == 'YES') {
+		opts.allow_null = true;
+	}
+
+	var code = "t." + util.detectSQLType(col) + "('" + col['COLUMN_NAME'] + "'";
+	
+	if (Object.keys(opts).length != 0) {
+		code += ", " + sys.inspect(opts) 
+	}
+	
+	code += ");";
+
+	return code;
+}
+
 // Recreates migration code from INFORMATION_SCHEMA.
 Migration.recreate = function() {
 	var db = common.config.database;
@@ -279,7 +298,7 @@ Migration.recreate = function() {
 			code += "    m.create_table('" + tableName + "', function(t) {\n";
 			for (var colName in columns) {
 				var col = columns[colName];
-				code += "      t." + util.detectSQLType(col) + "('" + colName + "');\n";
+				code += "      " + makeColumnDefinition(col) + "\n";
 			}
 
 			if (timestamps) {

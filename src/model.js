@@ -172,6 +172,8 @@ var Model = function(ident, defFunc) {
 
 			if (val === null) {
 				me.values[key] = null;
+			} else if (val === undefined) {
+				me.values[key] = undefined;
 			} else {
 				type = model.columns[key]['DATA_TYPE'];
 
