@@ -15,7 +15,9 @@
  * along with NobleRecord.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-var util = require('./src/util');
+var common = require('./src/common'),
+	util = require('./src/util');
+
 var NobleRecord = require('./noblerecord').NobleRecord;
 var NobleMachine = require('noblemachine').NobleMachine;
 
@@ -23,8 +25,6 @@ var command = process.argv.slice(2).join(' ');
 
 var sys = require('sys'),
 	fs = require('fs');
-
-sys.log(command);
 
 global.NobleRecord = NobleRecord;
 require(process.cwd() + '/db/config');
@@ -43,8 +43,7 @@ function generate_schema() {
 	return act;
 }
 
-function parseDateStr(datestr) {
-}
+var logger = common.config.logger;
 
 switch (command) {
 	case 'init':
@@ -73,6 +72,10 @@ switch (command) {
 
 		act.next(function() {
 			act.toNext(generate_schema());
+		});
+
+		act.error(function(err) {
+			logger.log(JSON.stringify(err));
 		});
 
 		act.start();
@@ -107,13 +110,18 @@ switch (command) {
 		generate_schema().start();
 		break;
 
-	case 'create_database':
+	case 'fill database':
 		require(process.cwd() + '/db/schema');
 
 		var act = new NobleMachine(function() {
 			act.toNext(NobleRecord.Migrations.raiseAll());
 		});
 
+		act.error(function(err) {
+			logger.error(JSON.stringify(err));
+		});
+
 		act.start();
 		break;
 }
+

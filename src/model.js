@@ -93,7 +93,7 @@ var Model = function(ident, defFunc) {
 			});
 
 			act.error(function(err) {
-				logger.log("Error saving `" + model.ident + "` record: " + JSON.stringify(err));
+				logger.error("Error saving `" + model.ident + "` record: " + JSON.stringify(err));
 				act.emitError(err);
 			});
 
@@ -159,7 +159,7 @@ var Model = function(ident, defFunc) {
 			});
 
 			act.error(function(err) {
-				logger.log("Error deleting `" + model.ident + "` record: " + JSON.stringify(err));
+				logger.error("Error deleting `" + model.ident + "` record: " + JSON.stringify(err));
 				act.emitError(err);
 			});
 
@@ -168,7 +168,7 @@ var Model = function(ident, defFunc) {
 
 		// Generic setter for SQL-correspondent values. Forces typecasting for database compatibility.
 		function setValue(key, val) {
-			sys.log(key + ": " + JSON.stringify(val));
+			//sys.log(key + ": " + JSON.stringify(val));
 
 			if (val === null) {
 				me.values[key] = null;
@@ -285,7 +285,7 @@ var Model = function(ident, defFunc) {
 		});
 
 		act.error(function(err) {
-			logger.log("Error executing select statement for `" + model.ident +"`: " + JSON.stringify(err));
+			logger.error("Error executing select statement for `" + model.ident +"`: " + JSON.stringify(err));
 			act.emitError(err);
 		});
 

@@ -20,21 +20,127 @@ var sys = require('sys');
 var common = require('./common'),
 	util = require('./util');
 
-var TableDefinition = function(name, definer) {
-	var t = this;
-	var columns = [];
+var logger = common.config.logger;
+
+// Generates the SQL fragment defining a given column.
+function columnToSQL(col) {
+	var sql = "`" + col.name + "` ";
+
+	sql += util.typeToSQL(col.type);
+
+	if (col['additional']) {
+		sql += ' ' + col['additional'];
+	}
+
+	if (!col['allow_null']) {
+		sql += " NOT NULL";
+	}
+
+	if (col['default']) {
+		var def = col['default']
+
+		sql += " DEFAULT " + serialize(def);
+	}
+
+	if (col.type == 'primary_key') {
+		sql += " PRIMARY KEY";
+	}
+
+	return sql;
+}
+
+/**
+ * Table definition class. Converts friendly definition function calls into SQL-querying actions.
+ * @param name Name of the table.
+ * @param context Either 'create' or 'alter'.
+ * @param definer Function given by user which makes the definition calls.
+ */
+var TableDefinition = function(tablename, context, definer) {
+	var me = {};
+	var db = common.config.database;
+
+	me.act = new NobleMachine(); // Query subactions are added as states to this.
+
+	var needsTableCreation = (context == 'create');
+
+	function nextQuery(query) {
+		me.act.next(db.query(query));
+	}
 
 	var definitions = {
-		column: function(name, type, options) {
+		add_column: function(name, type, options) {
 			var col = { name: name, type: type };
 			_.extend(col, options);
-			columns.push(col);
+			
+			// If we haven't yet made the table, use the first added column as part of the create statement.
+			// All following columns are added via ALTER TABLE. This is because a table cannot be created
+			// with zero columns.
+			if (needsTableCreation) {
+				nextQuery("CREATE TABLE `" + tablename + "` ( " + columnToSQL(col) + " ) ENGINE=INNODB;");
+				needsTableCreation = false;
+			} else {
+				nextQuery("ALTER TABLE `" + tablename + "` ADD " + columnToSQL(col) + ";");
+			}
 		},
 
 		timestamps: function(options) {
 			this.column('createdAt', 'datetime', options);
 			this.column('updatedAt', 'datetime', options);
 		}
+	};
+
+	definitions.column = definitions.add_column;
+	
+	if (context == 'alter') {
+		_.extend(definitions, {
+			change_column: function(name, type, options) {
+				var col = { name: name, type: type };
+				_.extend(col, options);
+
+				nextQuery("ALTER TABLE `" + tablename + "` MODIFY " + columnToSQL(col) + ";");
+			},
+
+			remove_column: function(name) {
+				nextQuery("ALTER TABLE `" + tablename + "` DROP COLUMN `" + name + "`;");
+			},
+
+			// There doesn't seem to be a proper RENAME COLUMN statement in MySQL.
+			// As such, it is necessary to use CHANGE after extracting the current column definition.
+			rename_column: function(name, newname) {
+				var act = new NobleMachine(function() {
+					act.toNext(db.query("SHOW COLUMNS FROM `" + tablename + "`;"));
+				});
+
+				act.next(function(result) {
+					var sql = "ALTER TABLE `" + tablename + "` CHANGE `" + name + "` `" + newname + "`";
+
+					result.forEach(function(coldatum) {
+						if (coldatum['Field'] == name) {
+							sql += " " + coldatum['Type'];
+							
+							if (coldatum['Null'] == 'NO') {
+								sql += " NOT NULL";
+							}
+
+							if (coldatum['Key'] == 'PRI') {
+								sql += " PRIMARY KEY";
+							}
+
+							sql += coldatum['Extra'];
+
+							if (coldatum['Default'] != 'NULL') {
+								sql += " DEFAULT " + coldatum['Default'];
+							}
+						}
+					});
+					sql += ";";
+
+					act.toNext(db.query(sql));
+				});
+
+				me.act.next(act);
+			},
+		});
 	}
 
 	var types = ['primary_key', 'string', 'text', 'integer', 'boolean', 'datetime', 'timestamp']
@@ -60,83 +166,41 @@ var TableDefinition = function(name, definer) {
 
 	definer(definitions);
 
-	// Generates the SQL fragment defining a given column.
-	function columnToSQL(col) {
-		var sql = "`" + col.name + "` ";
-
-		sql += typeToSQL(col.type);
-
-		if (col['additional']) {
-			sql += ' ' + col['additional'];
-		}
-
-		if (!col['allow_null']) {
-			sql += " NOT NULL";
-		}
-
-		if (col['default']) {
-			var def = col['default']
-
-			sql += " DEFAULT " + serialize(def);
-		}
-
-		if (col.type == 'primary_key') {
-			sql += ", PRIMARY KEY (`" + col.name + "`)";
-		}
-
-		return sql;
-	}
-
-	return {
-		makeCreateSQL: function() {
-			var sql = " CREATE TABLE `" + name + "` (";
-			sql += columns.map(columnToSQL).join(", ");
-			sql += " ) ENGINE=INNODB;\n";
-
-			return sql;
-		}
-	};
+	return me;
 }
 
+/**
+ * Database definition class. Conglomerates TableDefinitions and SQL actions corresponding to friendly definition calls.
+ */
 var DatabaseDefinition = function() {
 	var me = {};
+	var db = common.config.database;
 
-	me.queries = [];
+	me.act = new NobleMachine();
 
 	return _.extend(me, {
 		create_table: function(name, definer) {
-			var t = new TableDefinition(name, definer);
-			this.queries.push(t.makeCreateSQL());
+			var t = new TableDefinition(name, 'create', definer);
+			me.act.next(t.act);
+		},
+
+		alter_table: function(name, definer) {
+			var t = new TableDefinition(name, 'alter', definer);
+			me.act.next(t.act);
 		},
 
 		drop_table: function(name) {
-			this.queries.push(" DROP TABLE `" + name + "`;");
-		}
+			me.act.next(db.query(" DROP TABLE `" + name + "`;"));
+		},
+
+		rename_table: function(name, newname) {
+			me.act.next(db.query(" ALTER TABLE `" + name + "` RENAME `" + newname + "`"));
+		},
 	});
 };
 
 // Array of all migrations in order of their construction.
 var Migrations = []; 
-
-function queryAll(db, queries) {
-	var realQueries = queries.slice();
-
-	var act = new NobleMachine();
-
-	act.next(function() {
-		act.toNext(db.query(realQueries.shift()))	
-	});
-
-	act.next(function() {
-		if (realQueries.length > 0) {
-			act.toPrev();
-		} else {
-			act.toLast();
-		}
-	});
-
-	return act;
-}
 
 var Migration = function(opts) {
 	var me = this;
@@ -153,17 +217,17 @@ var Migration = function(opts) {
 
 	if (Migration.currentFilename) {
 		me.filename = Migration.currentFilename;
-		up.queries.push("INSERT INTO tblSchemaMigrations SET `filename` = " + util.serialize(me.filename) + ";");
-		down.queries.push("DELETE FROM tblSchemaMigrations WHERE `filename` = " + util.serialize(me.filename) + ";");
+		up.act.next(db.query("INSERT INTO tblSchemaMigrations SET `filename` = " + util.serialize(me.filename) + ";"));
+		down.act.next(db.query("DELETE FROM tblSchemaMigrations WHERE `filename` = " + util.serialize(me.filename) + ";"));
 	}
 
 	_.extend(me, {
 		raise: function() {
-			return queryAll(db, up.queries);
+			return up.act;
 		},
 
 		lower: function() {
-			return queryAll(db, down.queries);
+			return down.act;
 		},
 	});
 
@@ -189,6 +253,11 @@ Migration.recreate = function() {
 	act.next(function(cols) {
 		cols.forEach(function(col) {
 			var tableName = col['TABLE_NAME'];
+
+			if (tableName == 'tblSchemaMigrations') {
+				return;
+			}
+
 			if (tables[tableName] === undefined) 
 				tables[tableName] = {};
 
