@@ -19,7 +19,7 @@ var common = require('./src/common'),
 	util = require('./src/util');
 
 var NobleRecord = require('./noblerecord').NobleRecord;
-var NobleMachine = require('noblemachine').NobleMachine;
+var NobleMachine = require('./src/lib/noblemachine/noblemachine').NobleMachine;
 
 var sys = require('sys');
 

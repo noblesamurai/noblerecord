@@ -15,9 +15,9 @@
  * along with NobleRecord.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-var common = require('src/common');
-var migration = require('src/migration');
-var model = require('src/model');
+var common = require('./src/common');
+var migration = require('./src/migration');
+var model = require('./src/model');
 
 var NobleRecord = {};
 
