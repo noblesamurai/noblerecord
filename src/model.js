@@ -12,7 +12,7 @@
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public License
- * along with NobleRecord.  If not, see <http://www.gnu.org/licenses/>.
+ * along with   If not, see <http://www.gnu.org/licenses/>.
  */
 
 var sys = require('sys');
@@ -247,7 +247,7 @@ var Model = function(ident, defFunc) {
 
 	model.hasOne = function(foreignIdent) {
 		model.prototype["get" + foreignIdent] = function() {
-			var foreign = NobleRecord.Models[foreignIdent];
+			var foreign = Models[foreignIdent];
 
 			var opts = {}
 			opts[model.primary] = this[model.primary];
@@ -257,7 +257,7 @@ var Model = function(ident, defFunc) {
 
 	model.belongsTo = function(foreignIdent) {
 		model.prototype["get" + foreignIdent] = function() {
-			var foreign = NobleRecord.Models[foreignIdent];
+			var foreign = Models[foreignIdent];
 
 			var opts = {}
 			opts[foreign.primary] = this[foreign.primary];
@@ -386,7 +386,7 @@ var Model = function(ident, defFunc) {
 		return act;
 	}
 
-	NobleRecord.Models[model.ident] = model;
+	Models[model.ident] = model;
 
 	return model;
 }
@@ -396,9 +396,9 @@ Model.fillSchemas = function() {
 	var act = new NobleMachine(function() {
 		var queue = act.queue('success');
 
-		for (var ident in NobleRecord.Models) {
+		for (var ident in Models) {
 			queue.addTransition({
-				action: NobleRecord.Models[ident].fillSchema(),
+				action: Models[ident].fillSchema(),
 				success: 'fill-success',
 				error: 'fill-error',
 			});
