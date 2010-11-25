@@ -36,8 +36,8 @@ function columnToSQL(col) {
 		sql += " NOT NULL";
 	}
 
-	if (col['default']) {
-		var def = col['default']
+	if (col['default_value'] !== undefined) {
+		var def = col['default_value']
 
 		sql += " DEFAULT " + util.serialize(def);
 	}
@@ -245,7 +245,7 @@ function makeColumnDefinition(col) {
 	}
 
 	if (col['COLUMN_DEFAULT'] != null) {
-		opts['default'] = util.parseSQLVal(util.detectSQLType(col), col['COLUMN_DEFAULT']);
+		opts['default_value'] = util.parseSQLVal(util.detectSQLType(col), col['COLUMN_DEFAULT']);
 	}
 
 	var code = "t." + util.detectSQLType(col) + "('" + col['COLUMN_NAME'] + "'";
@@ -376,7 +376,7 @@ Migration.apply = function(dir) {
 		if (dir == 'raise') {
 			for (var i = 0; i < Migrations.length; i++) {
 				if (raised.indexOf(Migrations[i]) == -1) {
-					act.toNext(Migratons[i].raise());
+					act.toNext(Migrations[i].raise());
 					break;
 				}
 			}

@@ -49,41 +49,58 @@ function generate_schema() {
 
 var logger = common.config.logger;
 
+function migrate(dir) {
+	var filenames = fs.readdirSync('db/migrate');
+	filenames.forEach(function(filename) {
+		var match = filename.match(/(\d+)_(.+?)\.js/);
+		if (!match) return;
+
+		var datestr = match[1], ident = match[2];
+
+		// HACK (Daniel): Should probably restructure this so that the filename passing is more transparent.
+		NobleRecord.Migration.currentFilename = filename;
+
+		require(process.cwd() + '/db/migrate/' + datestr + '_' + ident);
+
+		var migr = NobleRecord.Migrations[NobleRecord.Migrations.length-1];
+	});
+
+	var act = new NobleMachine(function() {
+		if (dir == 'all') {
+			act.toNext(NobleRecord.Migrations.raiseAll());
+		} else if (dir == 'up') {
+			act.toNext(NobleRecord.Migration.raise());
+		} else if (dir == 'down') {
+			act.toNext(NobleRecord.Migration.lower());
+		}
+	});
+
+	act.next(function() {
+		act.toNext(generate_schema());
+	});
+
+	act.error(function(err) {
+		logger.log(JSON.stringify(err));
+	});
+
+	act.start();
+}
+
 switch (command) {
 	case 'init':
 		break;
 
 	case 'migrate':
 	case 'migrate all':
-		var filenames = fs.readdirSync('db/migrate');
-		filenames.forEach(function(filename) {
-			var match = filename.match(/(\d+)_(.+?)\.js/);
-			if (!match) return;
+		migrate('all');
+		break;
 
-			var datestr = match[1], ident = match[2];
+	case 'migrate down':
+		migrate('down');
+		break;
 
-			// HACK (Daniel): Should probably restructure this so that the filename passing is more transparent.
-			NobleRecord.Migration.currentFilename = filename;
-
-			require(process.cwd() + '/db/migrate/' + datestr + '_' + ident);
-
-			var migr = NobleRecord.Migrations[NobleRecord.Migrations.length-1];
-		});
-
-		var act = new NobleMachine(function() {
-			act.toNext(NobleRecord.Migrations.raiseAll());
-		});
-
-		act.next(function() {
-			act.toNext(generate_schema());
-		});
-
-		act.error(function(err) {
-			logger.log(JSON.stringify(err));
-		});
-
-		act.start();
-
+	case 'migrate up':
+		migrate('up');
 		break;
 
 	case 'generate migration':
