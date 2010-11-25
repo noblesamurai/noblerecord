@@ -396,8 +396,6 @@ var Model = function(ident, defFunc) {
 // Fill schemas for all defined models. Should be run before any models are instantiated.
 Model.fillSchemas = function() {
 	var act = new NobleMachine(function() {
-		var queue = act.queue('success');
-
 		for (var ident in Models) {
 			act.next(Models[ident].fillSchema());
 		}
