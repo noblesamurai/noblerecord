@@ -36,6 +36,10 @@ var Model = function(ident, defFunc) {
 	var model = function(params) {
 		var me = this;
 
+		if (Object.keys(model.columns).length == 0) {
+			throw "Attempting to initialize `" + model.ident + " ` instance before filling schema!";
+		}
+
 		me.values = {}; // Raw column values, accessed by setter/getter functions.
 
 		params = params || {};
@@ -395,19 +399,9 @@ Model.fillSchemas = function() {
 		var queue = act.queue('success');
 
 		for (var ident in Models) {
-			queue.addTransition({
-				action: Models[ident].fillSchema(),
-				success: 'fill-success',
-				error: 'fill-error',
-			});
+			act.next(Models[ident].fillSchema());
 		}
-
-		queue.start();
 	});
-
-	act.addState('fill-success', function() { });
-
-	act.addState('fill-error', function(err) { act.toError(err) });
 
 	return act;
 }
