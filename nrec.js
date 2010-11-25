@@ -31,7 +31,10 @@ var sys = require('sys'),
 	fs = require('fs');
 
 global.NobleRecord = NobleRecord;
-require(process.cwd() + '/db/config');
+
+if (command != 'init') {
+	require(process.cwd() + '/db/config');
+}
 
 function generate_schema() {
 	var act = new NobleMachine(function() {
@@ -86,8 +89,37 @@ function migrate(dir) {
 	act.start();
 }
 
+function nicemkdir(path) {
+	try {
+		fs.mkdirSync(path, 0744);
+	} catch (err) {
+		if (err.message.search('File exists') == -1) {
+			throw err
+		}
+	}
+}
+
 switch (command) {
 	case 'init':
+		nicemkdir('db');
+		nicemkdir('db/migrate');
+
+		var code = "/**\n"
+				 + " * This file is loaded by the 'nrec' command, and specifies the database/logging options\n"
+				 + " * which provide the context for NobleRecord. You will likely want to require this file\n"
+				 + " * from within your application as well.\n"
+				 + " */\n"
+				 + "\n"
+				 + "NobleRecord.config.database = null;\n"
+				 + "NobleRecord.config.logger = {\n"
+				 + "  log: sys.log,\n"
+				 + "  warning: sys.log,\n"
+				 + "  error: sys.log\n"
+				 + "};\n";
+
+		var fd = fs.openSync('db/config.js', 'w');
+		fs.writeSync(fd, code);
+		fs.closeSync(fd);
 		break;
 
 	case 'migrate':
