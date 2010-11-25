@@ -116,13 +116,13 @@ var Model = function(ident, defFunc) {
 						me[col] = newInst[col];
 					}
 
-					act.toLast(me);
+					act.toNext(me);
 				} else {
 					for (var key in model.columns) {
 						me[key] = undefined
 					}
 
-					act.toLast(null);
+					act.toNext(null);
 				}
 			});
 
@@ -204,7 +204,6 @@ var Model = function(ident, defFunc) {
 		function getValue(key) {
 			return me.values[key];
 		}
-			
 
 		for (var key in model.columns) {
 			me.__defineSetter__(key, setValue.bind(me, key));
@@ -300,12 +299,11 @@ var Model = function(ident, defFunc) {
 	 * @param conjunction Default 'AND'.
      */
 	model.where = function(params, conjunction) {
-		logger.log("Finding all `" + model.ident + "`" + (params === undefined ? '' : " matching: " + JSON.stringify(params)));
-
 		conjunction = conjunction || 'AND'
 		var where = '';
 		var first = true;
-		
+
+		logger.log("Finding all `" + model.ident + "`" + (params === undefined ? '' : " matching: " + sys.inspect(params) + " with conjunction '" + conjunction + "'"));
 
 		if (params) {
 			for (var key in model.columns) {
