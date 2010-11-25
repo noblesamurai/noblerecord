@@ -136,10 +136,44 @@ function typeToSQL(type) {
 	}
 }
 
+var sys = require('sys');
+
+/**
+ * Parses an SQL string into a JS object given the friendly type.
+ */
+function parseSQLVal(type, val) {
+	if (val == 'NULL') {
+		return null;
+	}
+
+	switch (type) {
+		case 'datetime':
+		case 'timestamp':
+			if (val == 'CURRENT_TIMESTAMP') {
+				return val;
+			} else {
+				return new Date(val);
+			}
+		case 'text':
+		case 'string':
+			return val;
+		case 'integer':
+		case 'primary_key':
+			return parseInt(val);
+		case 'float':
+			return parseFloat(val);
+		case 'boolean':
+			return (val == "TRUE");
+		default:
+			throw "Unknown friendly type `" + type + "`!";
+	}
+}
+
 _.extend(exports, {
 	padNum: padNum,
 	makeDateStr: makeDateStr,
 	serialize: serialize,
 	detectSQLType: detectSQLType,
-	typeToSQL: typeToSQL
+	typeToSQL: typeToSQL,
+	parseSQLVal: parseSQLVal
 });

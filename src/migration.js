@@ -39,7 +39,7 @@ function columnToSQL(col) {
 	if (col['default']) {
 		var def = col['default']
 
-		sql += " DEFAULT " + serialize(def);
+		sql += " DEFAULT " + util.serialize(def);
 	}
 
 	if (col.type == 'primary_key') {
@@ -242,6 +242,10 @@ function makeColumnDefinition(col) {
 
 	if (col['IS_NULLABLE'] == 'YES') {
 		opts.allow_null = true;
+	}
+
+	if (col['COLUMN_DEFAULT'] != null) {
+		opts['default'] = util.parseSQLVal(util.detectSQLType(col), col['COLUMN_DEFAULT']);
 	}
 
 	var code = "t." + util.detectSQLType(col) + "('" + col['COLUMN_NAME'] + "'";
