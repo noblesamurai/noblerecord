@@ -62,7 +62,7 @@ function dateFromFilename(fn) {
 	return new Date(m[1], m[2], m[3], m[4], m[5], m[6]);
 }
 
-function migrate(dir) {
+function getSortedMigrationFiles() {
 	var filenames = fs.readdirSync('db/migrate');
 
 	filenames = filenames.filter(function(fn) {
@@ -75,6 +75,12 @@ function migrate(dir) {
 
 		return d1-d2;
 	});
+
+	return filenames;
+}
+
+function migrate(dir) {
+	var filenames = getSortedMigrationFiles();
 
 	filenames.forEach(function(filename) {
 		// HACK (Daniel): Should probably restructure this so that the filename passing is more transparent.
@@ -187,6 +193,20 @@ switch (command) {
 
 		var act = new NobleMachine(function() {
 			act.toNext(NobleRecord.Migrations.raiseAll());
+		});
+
+		act.next(function() {
+			var db = common.config.database;
+
+			var filenames = getSortedMigrationFiles();
+			
+			filenames.forEach(function(fn) {
+				var subact = new NobleMachine(function() {
+					subact.toNext(db.query("INSERT INTO tblSchemaMigrations SET `filename` = " + util.serialize(fn) + ";"));
+				});
+
+				act.next(subact);
+			});
 		});
 
 		act.error(function(err) {
