@@ -52,18 +52,35 @@ function generate_schema() {
 
 var logger = common.config.logger;
 
+function dateFromFilename(fn) {
+	var match = fn.match(/(\d+)_(.+?)\.js/);
+	if (!match) return null;
+
+	var datestr = match[1];
+
+	var m = datestr.match(/(\d\d\d\d)(\d\d)(\d\d)(\d\d)(\d\d)(\d\d)/);
+	return new Date(m[1], m[2], m[3], m[4], m[5], m[6]);
+}
+
 function migrate(dir) {
 	var filenames = fs.readdirSync('db/migrate');
+
+	filenames = filenames.filter(function(fn) {
+		return fn.match(/(\d+)_(.+?)\.js/);
+	});
+
+	filenames = filenames.sort(function(f1, f2) {
+		var d1 = dateFromFilename(f1);
+		var d2 = dateFromFilename(f2);
+
+		return d1-d2;
+	});
+
 	filenames.forEach(function(filename) {
-		var match = filename.match(/(\d+)_(.+?)\.js/);
-		if (!match) return;
-
-		var datestr = match[1], ident = match[2];
-
 		// HACK (Daniel): Should probably restructure this so that the filename passing is more transparent.
 		NobleRecord.Migration.currentFilename = filename;
 
-		require(process.cwd() + '/db/migrate/' + datestr + '_' + ident);
+		require(process.cwd() + '/db/migrate/' + filename.match("(.*)\.js")[1]);
 
 		var migr = NobleRecord.Migrations[NobleRecord.Migrations.length-1];
 	});
