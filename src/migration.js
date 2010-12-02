@@ -94,7 +94,6 @@ var TableDefinition = function(tablename, context, definer) {
 	if (context == 'alter') {
 		_.extend(definitions, {
 			change_column: function(name, type, options) {
-				logger.log(sys.inspect(type));
 				var col = { name: name, type: type };
 				_.extend(col, options);
 
@@ -224,11 +223,21 @@ var Migration = function(opts) {
 
 	_.extend(me, {
 		raise: function() {
-			return up.act;
+			var act = new NobleMachine(function() {
+				logger.log("Raising migration `" + (me.filename ? me.filename : Migrations.indexOf(me)) +"`.");
+				act.toNext(up.act);
+			});
+
+			return act;
 		},
 
 		lower: function() {
-			return down.act;
+			var act = new NobleMachine(function() {
+				logger.log("Lowering migration `" + (me.filename ? me.filename : Migrations.indexOf(me)) +"`.");
+				act.toNext(down.act);
+			});
+
+			return act;
 		},
 	});
 
@@ -351,8 +360,6 @@ Migrations.getRaised = function() {
 	act.next(function(result) {
 		var filenames = result.map(function(datum) { return datum.filename; });
 
-		sys.log(filenames);
-		
 		var migrations = [];
 		Migrations.forEach(function(migr) {
 			if (filenames.indexOf(migr.filename) != -1) migrations.push(migr);
