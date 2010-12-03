@@ -37,7 +37,11 @@ var Model = function(ident, defFunc) {
 		var me = this;
 
 		if (Object.keys(model.columns).length == 0) {
-			throw "Attempting to initialize `" + model.ident + " ` instance before filling schema!";
+			logger.error("Attempting to initialize `" + model.ident + " ` instance before filling schema!");
+			return null;
+		} else if (model.primary === undefined) {
+			logger.error("No primary key found for `" + model.ident + "`!");
+			return null;
 		}
 
 		me.values = {}; // Raw column values, accessed by setter/getter functions.
@@ -284,7 +288,7 @@ var Model = function(ident, defFunc) {
 		});
 
 		act.next(function(result) {
-			act.toLast(result.map(function(sqlobj) {
+			act.toNext(result.map(function(sqlobj) {
 				return new model(sqlobj);
 			}));
 		});
