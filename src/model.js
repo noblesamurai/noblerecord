@@ -37,7 +37,7 @@ var Model = function(ident, defFunc) {
 		var me = this;
 
 		if (Object.keys(model.columns).length == 0) {
-			logger.error("Attempting to initialize `" + model.ident + " ` instance before filling schema!");
+			logger.error("Attempting to initialize `" + model.ident + "` instance before filling schema!");
 			return null;
 		} else if (model.primary === undefined) {
 			logger.error("No primary key found for `" + model.ident + "`!");
@@ -97,7 +97,7 @@ var Model = function(ident, defFunc) {
 				
 				logger.log("Successfully saved `" + model.ident + "` record `" + me[model.primary] + "`");
 
-				act.toLast(me);
+				act.toNext(me);
 			});
 
 			act.error(function(err) {
@@ -341,7 +341,7 @@ var Model = function(ident, defFunc) {
 		});
 
 		act.next(function(objs) {
-			act.toLast(objs.length ? objs[0] : null);
+			act.toNext(objs.length ? objs[0] : null);
 		});
 
 		return act;
