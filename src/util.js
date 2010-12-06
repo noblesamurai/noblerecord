@@ -35,12 +35,12 @@ function padNum(num) {
 function makeDateStr(date, sep) {
 	if (sep === undefined) sep = true;
 
-	var year = date.getFullYear().toString(),
-		month = padNum(date.getMonth()+1),
-		day = padNum(date.getDate()),
-		hours = padNum(date.getHours()),
-		minutes = padNum(date.getMinutes()),
-		seconds = padNum(date.getSeconds());
+	var year = date.getUTCFullYear().toString(),
+		month = padNum(date.getUTCMonth()+1),
+		day = padNum(date.getUTCDate()),
+		hours = padNum(date.getUTCHours()),
+		minutes = padNum(date.getUTCMinutes()),
+		seconds = padNum(date.getUTCSeconds());
 
 	if (sep) {
 		return year + '-' + month + '-' + day + ' ' + hours + ':' + minutes + ':' + seconds;
