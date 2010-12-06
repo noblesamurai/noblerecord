@@ -151,6 +151,10 @@ function parseSQLVal(type, val) {
 		case 'timestamp':
 			if (val == 'CURRENT_TIMESTAMP') {
 				return val;
+            } else if (val == '0000-00-00 00:00:00') {
+                // HACK(arlen): Not sure if this is correct, but constructing
+                // a Date out of this yields "Invalid Date".
+                return null;
 			} else {
 				return new Date(val);
 			}
