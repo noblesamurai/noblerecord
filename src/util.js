@@ -57,7 +57,7 @@ function serialize(val) {
 		return 'NULL'
 
 	} else if (typeof val == 'string') {
-		return "'" + val.replace(/(')/g, '\\$1') + "'";
+		return "'" + val.replace(/(\\)/g, '\\$1').replace(/(')/g, '\\$1') + "'";
 	
 	} else if (typeof val == 'number') {
 		if (isNaN(val)) {
