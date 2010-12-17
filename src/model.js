@@ -44,7 +44,12 @@ var Model = function(ident, defFunc) {
 			return null;
 		}
 
-		me.values = {}; // Raw column values, accessed by setter/getter functions.
+		Object.defineProperty(me, 'values', {
+			value: {},
+			enumerable: false,
+			writable: true,
+			configurable: true,
+		}); // Raw column values, accessed by setter/getter functions.
 
 		params = params || {};
 
