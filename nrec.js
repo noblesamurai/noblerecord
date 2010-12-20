@@ -87,8 +87,6 @@ function migrate(dir) {
 		NobleRecord.Migration.currentFilename = filename;
 
 		require(process.cwd() + '/db/migrate/' + filename.match("(.*)\.js")[1]);
-
-		var migr = NobleRecord.Migrations[NobleRecord.Migrations.length-1];
 	});
 
 	var act = new NobleMachine(function() {

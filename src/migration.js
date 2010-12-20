@@ -388,7 +388,11 @@ Migration.apply = function(dir) {
 				}
 			}
 		} else if (dir == 'lower') {
-			act.toNext(raised[raised.length-1].lower());
+			if (raised.length == 0) {
+				act.toNext();
+			} else {
+				act.toNext(raised[raised.length-1].lower());
+			}
 		}
 	});
 
