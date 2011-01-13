@@ -27,24 +27,21 @@ var mysql = require('./mysql');
 // Configuration options..
 config = {
 	database: null,
-	dbopts: {
-		host: 'localhost',
-		username: 'articles',
-		password: 'DaCr0n!',
-		database: 'articles'
-	},
+	/*dbopts: {
+		host: '',
+		username: '',
+		password: '',
+		database: ''
+	},*/
 	logger:  {
-		log: sys.log,
-		warning: sys.log,
-		error: sys.log
+		log: function() { },
+		warning: function() { },
+		error: function() { }
 	}
 }
 
 exports.config = config;
 
 exports.db_query = function(query) {
-    if (config.database === null) {
-        config.database = new mysql.DbConnection(config.dbopts);
-    }
-    return config.database.query(query);
+	return config.database.query(query);
 }

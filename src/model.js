@@ -19,7 +19,8 @@ var sys = require('sys');
 
 var common = require('./common'),
 	util = require('./util'),
-	mysql = require('./mysql');
+	mysql = require('./mysql'),
+	logger = require('./logger');
 
 var Models = {};
 
@@ -29,8 +30,6 @@ var db_query = common.db_query;
  * Poor man's ActiveRecord::Base, essentially. Some trickiness involved to maintain asynchronicity.
  */
 var Model = function(ident, defFunc) {
-	var db = common.config.database;
-	var logger = common.config.logger;
 
 	/**
 	 * Here's the actual class we're making.
@@ -364,7 +363,7 @@ var Model = function(ident, defFunc) {
 	model.fillSchema = function() {
 		var act = new NobleMachine(function() {
 			var sql = "SELECT * FROM INFORMATION_SCHEMA.COLUMNS"
-					+ " WHERE TABLE_SCHEMA = '" + db.options.database + "'"
+					+ " WHERE TABLE_SCHEMA = '" + common.config.database.options.database + "'"
 					+ " AND TABLE_NAME = '" + model.table + "';";
 
 			act.toNext(db_query(sql));

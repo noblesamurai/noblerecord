@@ -1,25 +1,29 @@
-/** LEGAL COPYRIGHT NOTICE
- *
- * Copyright (c) Noble Samurai Pty Ltd, 2008-2010.  All Rights Reserved.  
- *
- * This software is proprietary to and embodies the confidential technology of
- * Noble Samurai Pty Ltd.  Possession, use, dissemination or copying of this
- * software and media is authorised only pursuant to a valid written license
- * from Noble Samurai Pty Ltd.  Questions or requests regarding permission may
- * be sent by email to legal@noblesamurai.com or by post to PO Box 477,
- * Blackburn Victoria 3130, Australia.
+/**
+ * Copyright 2010 Noble Samurai
+ * 
+ * NobleRecord is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ * 
+ * NobleRecord is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with   If not, see <http://www.gnu.org/licenses/>.
  */
 
 /**
  * Wrappings for the node-mysql-libmysqlclient library
  */
 
-require.paths.unshift(__dirname + '/../node-mysql-libmysqlclient');
-
 var sys = require('sys'),
-	action = require('action'),
 	mysql = require('mysql-libmysqlclient'),
 	events = require('events');
+
+var NobleMachine = require('./lib/noblemachine/noblemachine').NobleMachine;
 
 var states = {
 	CLOSED: 0,
@@ -90,7 +94,7 @@ function DbConnection (options) {
 	 * Reconnect if required.
 	 */
 	me._testConnection = function() {
-		var act = new action.StateMachine(function() {
+		var act = new NobleMachine(function() {
 			if (me.isConnected()) {
 				act.emitSuccess();
 			} else {
@@ -113,7 +117,7 @@ function DbConnection (options) {
 
 	me.connect = function() {
 		log.debug('Connect called with state'+me.state, 'noblesql');
-		var act = new action.StateMachine(function() {
+		var act = new NobleMachine(function() {
 			switch (me.state) {
 				case states.CONNECTING:
 				// A connection attempt is already in progress!
@@ -162,7 +166,7 @@ function DbConnection (options) {
 	};
 
 	me.query = function(sql) {
-		var act = new action.StateMachine(function() {
+		var act = new NobleMachine(function() {
 			act.transition({
 				success: 'query',
 				error: 'error',
