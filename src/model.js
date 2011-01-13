@@ -18,10 +18,12 @@
 var sys = require('sys');
 
 var common = require('./common'),
-	util = require('./util');
+	util = require('./util'),
+	mysql = require('./mysql');
 
 var Models = {};
 
+var db_query = common.db_query;
 
 /**
  * Poor man's ActiveRecord::Base, essentially. Some trickiness involved to maintain asynchronicity.
@@ -81,7 +83,7 @@ var Model = function(ident, defFunc) {
 				}
 
 
-				act.toNext(db.query(sql));
+				act.toNext(db_query(sql));
 			});
 
 			act.next(function(result) {
@@ -155,7 +157,7 @@ var Model = function(ident, defFunc) {
 				var sql = "DELETE FROM " + model.table
 						+ " WHERE `" + model.primary + "` = " + me[model.primary];
 
-				act.toNext(db.query(sql));
+				act.toNext(db_query(sql));
 			});
 
 			act.next(function() {
@@ -284,7 +286,7 @@ var Model = function(ident, defFunc) {
 			var sql = "SELECT * FROM " + model.table +
 					  (where.length ? " WHERE " : '') + where + ";"
 
-			act.toNext(db.query(sql));
+			act.toNext(db_query(sql));
 		});
 
 		act.next(function(result) {
@@ -365,7 +367,7 @@ var Model = function(ident, defFunc) {
 					+ " WHERE TABLE_SCHEMA = '" + db.options.database + "'"
 					+ " AND TABLE_NAME = '" + model.table + "';";
 
-			act.toNext(db.query(sql));
+			act.toNext(db_query(sql));
 		});
 
 		act.next(function(res) {
@@ -386,7 +388,6 @@ var Model = function(ident, defFunc) {
 				act.toError("Could not detect primary key for table `" + model.table + "`.");
 				return;
 			}
-
 		});
 
 		return act;
@@ -397,7 +398,7 @@ var Model = function(ident, defFunc) {
 	return model;
 }
 
-// Fill schemas for all defined models. Should be run before any models are instantiated.
+// Fill schemas for all defined models.
 Model.fillSchemas = function() {
 	var act = new NobleMachine(function() {
 		for (var ident in Models) {

@@ -18,6 +18,7 @@
 var common = require('./src/common');
 var migration = require('./src/migration');
 var model = require('./src/model');
+var util = require('./src/util');
 
 var NobleRecord = {};
 
@@ -25,4 +26,14 @@ var sys = require('sys');
 
 _.extend(NobleRecord, common, migration, model);
 
+NobleRecord.util = util;
+
+NobleRecord.configure_connection = function(dbopts) {
+	common.config.dbopts = dbopts;
+}
+
+
+
+
 exports.NobleRecord = NobleRecord;
+
