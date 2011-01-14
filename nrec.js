@@ -26,9 +26,6 @@ var sys = require('sys');
 var command = process.argv[2];
 var args = process.argv.slice(3);
 
-sys.log(command);
-sys.log(sys.inspect(args));
-
 var sys = require('sys'),
 	fs = require('fs');
 
@@ -46,7 +43,8 @@ global.NobleRecord = NobleRecord;
 			sys.print(" migrate         Run all migrations, or one at a time.\n");
 			sys.print(" load schema     Load the entire schema file, and mark all migrations as run.\n");
 			sys.print("\n");
-			sys.print("All commands can be run with -h for more information.");
+			sys.print("All commands can be run with -h for more information.\n");
+			sys.print("\n");
 		} else if (command == 'init') {
 			sys.print("Usage: nrec init\n");
 			sys.print("\n");
@@ -242,10 +240,6 @@ global.NobleRecord = NobleRecord;
 
 		case 'migrate':
 			switch (args[0]) {
-				case 'all':
-					migrate('all');
-					break;
-
 				case 'down':
 					migrate('down');
 					break;
@@ -255,7 +249,8 @@ global.NobleRecord = NobleRecord;
 					break;
 
 				default:
-					usage()
+					migrate('all');
+					break;
 			}
 			break;
 
