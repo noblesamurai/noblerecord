@@ -22,12 +22,26 @@ NobleMachine = require('./lib/noblemachine/noblemachine').NobleMachine;
 
 var sys = require('sys');
 
+var mysql = require('./mysql');
+
 // Configuration options..
-exports.config = {
+config = {
 	database: null,
+	/*dbopts: {
+		host: '',
+		username: '',
+		password: '',
+		database: ''
+	},*/
 	logger:  {
-		log: sys.log,
-		warning: sys.log,
-		error: sys.log
+		log: function() { },
+		warning: function() { },
+		error: function() { }
 	}
+}
+
+exports.config = config;
+
+exports.db_query = function(query) {
+	return config.database.query(query);
 }
