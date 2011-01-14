@@ -74,11 +74,6 @@ Only basic one-to-one or one-way relationships are supported at present. The key
 		species.name == 'Jolteon' // true
 	});
 
-## migrations
-
-NobleRecord includes tentative support for JavaScript-driven database migrations and automatic schema generation. 
-
-
 ## logging
 
 If you are having difficulties, you may gain some insight into NobleRecord's behaviour by providing it with a logger object. All this logger requires is three string-accepting functions, one for each level of direness.
