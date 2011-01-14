@@ -23,7 +23,7 @@ var NobleMachine = require('./src/lib/noblemachine/noblemachine').NobleMachine;
 
 var sys = require('sys');
 
-var command = process.argv.slice(2, 3);
+var command = process.argv[2];
 var args = process.argv.slice(3);
 
 sys.log(command);
@@ -37,10 +37,45 @@ global.NobleRecord = NobleRecord;
 (function() {
 
 	function usage() {
-		sys.print("Usage: nrec COMMAND [ARGS]\n");
+		if (command == undefined || command == '-h') {
+			sys.print("Usage: nrec COMMAND [ARGS]\n");
+			sys.print("\n");
+			sys.print("The following commands are supported:\n");
+			sys.print(" init            Create default configuration from template.\n");
+			sys.print(" generate        Create a new migration or recreate the schema.\n");
+			sys.print(" migrate         Run all migrations, or one at a time.\n");
+			sys.print(" load schema     Load the entire schema file, and mark all migrations as run.\n");
+			sys.print("\n");
+			sys.print("All commands can be run with -h for more information.");
+		} else if (command == 'init') {
+			sys.print("Usage: nrec init\n");
+			sys.print("\n");
+			sys.print("Creates the following paths in the current working directory:\n");
+			sys.print("  ./db/\n");
+			sys.print("  ./db/migrate/\n");
+			sys.print("  ./db/config.js\n");
+			sys.print("\n");
+		} else if (command == 'generate') {
+			sys.print("Usage: nrec generate [generator] [arguments]\n");
+			sys.print("\n");
+			sys.print("The following generators are supported:\n");
+			sys.print(" migration [name]      Generate a new migration with the given file identifier.\n");
+			sys.print(" schema:               Creates or recreates the current schema specification.\n");
+			sys.print("\n");
+
+		} else if (command == 'migrate') {
+			sys.print("Usage: nrec migrate [dir]\n");
+			sys.print("\n");
+			sys.print("If no direction is supplied, runs all unraised migrations.\n");
+			sys.print("With a direction, runs a single migration:\n");
+			sys.print(" up      Raise the first unraised migration.\n");
+			sys.print(" down    Lower the last raised migration.\n");
+			sys.print("\n");
+		}
+
 	}
 
-	if (command.length == 0) {
+	if (command === undefined || command === '-h' || args.indexOf('-h') != -1) {
 		usage();
 		return;
 	}
@@ -167,25 +202,6 @@ global.NobleRecord = NobleRecord;
 			fs.closeSync(fd);
 			break;
 
-		case 'migrate':
-			switch (args[0]) {
-				case 'all':
-					migrate('all');
-					break;
-
-				case 'down':
-					migrate('down');
-					break;
-
-				case 'up':
-					migrate('up');
-					break;
-
-				default:
-					usage()
-			}
-			break;
-
 		case 'generate':
 			switch (args[0]) {
 				case 'migration':
@@ -224,9 +240,28 @@ global.NobleRecord = NobleRecord;
 			break;
 
 
-		case 'fill':
+		case 'migrate':
 			switch (args[0]) {
-				case 'database':
+				case 'all':
+					migrate('all');
+					break;
+
+				case 'down':
+					migrate('down');
+					break;
+
+				case 'up':
+					migrate('up');
+					break;
+
+				default:
+					usage()
+			}
+			break;
+
+		case 'load':
+			switch (args[0]) {
+				case 'schema':
 					require(process.cwd() + '/db/schema');
 
 					var act = new NobleMachine(function() {
@@ -253,6 +288,9 @@ global.NobleRecord = NobleRecord;
 
 					act.start();
 					break;
+
+				default:
+					usage();
 			}
 			break;
 		
