@@ -94,15 +94,17 @@ function DbConnection (options) {
 	 * Reconnect if required.
 	 */
 	me._testConnection = function() {
-		var act = new NobleMachine(function() {
+		var act = new NobleMachine();
+		
+		act.next.wait(function() {
 			if (me.isConnected()) {
-				act.emitSuccess();
+				act.toNext();
 			} else {
 				// Listen for connect event
 				var reconnected = function() {
 					log.debug('Refire!');
 					me.removeListener('connect', reconnected);
-					act.emitSuccess();
+					act.toNext();
 				};
 				me.addListener('connect', reconnected);
 
@@ -112,6 +114,7 @@ function DbConnection (options) {
 				}
 			}
 		});
+
 		return act;
 	};
 
@@ -167,13 +170,10 @@ function DbConnection (options) {
 
 	me.query = function(sql) {
 		var act = new NobleMachine(function() {
-			act.transition({
-				success: 'query',
-				error: 'error',
-				action: me._testConnection()
-			});
+			act.toNext(me._testConnection());
 		});
-		act.addState('query', function() {
+
+		act.next(function() {
 			log.debug('Executing '+sql, 'noblesql');
 			var res = me.connection.querySync(sql);
 
@@ -184,7 +184,7 @@ function DbConnection (options) {
 						insert_id: me.connection.lastInsertIdSync(),
 					}
 				} catch (e) {
-					return act.emitError({
+					return act.toError({
 						errno: me.connection.errnoSync(),
 						message: me.connection.errorSync(),
 					});
@@ -205,10 +205,7 @@ function DbConnection (options) {
 				});
 			}
 
-			act.emitSuccess(data);
-		});
-		act.addState('error', function(e) {
-			act.emitError(e);
+			act.toNext(data);
 		});
 
 		return act;
