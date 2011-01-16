@@ -13,7 +13,7 @@ The [underscore](http://documentcloud.github.com/underscore/) JavaScript utility
 
 ## database configuration
 
-Database configuration is synchronous; the connection is not opened until the first query is passed.
+Database configuration is asynchronous; the connection is not opened until the first query is passed.
 
 	var NobleRecord = require('noblerecord').NobleRecord;
 
@@ -92,7 +92,7 @@ If you are having difficulties, you may gain some insight into NobleRecord's beh
 
 ## license
 
-Copyright 2010 Noble Samurai
+Copyright 2010-2011 Noble Samurai
 
 NobleRecord is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
 
