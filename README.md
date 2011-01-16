@@ -80,9 +80,9 @@ NobleRecord includes tentative support for Rails-style database migrations. See 
 
 ## logging
 
-If you are having difficulties, you may gain some insight into NobleRecord's behaviour by providing it with a logger object. All this logger requires is three string-accepting functions, one for each level of direness.
+If you are having difficulties, you may gain some insight into NobleRecord's behaviour by providing it with a logger object. All this logger requires is four string-accepting functions, one for each level of direness.
 
-	NobleRecord.config.logger = { log: sys.log, warning: sys.log, error: sys.log }
+	NobleRecord.config.logger = { debug: sys.log, log: sys.log, warning: sys.log, error: sys.log }
 
 
 ## contributors

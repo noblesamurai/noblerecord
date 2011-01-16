@@ -27,13 +27,8 @@ var mysql = require('./mysql');
 // Configuration options..
 config = {
 	database: null,
-	/*dbopts: {
-		host: '',
-		username: '',
-		password: '',
-		database: ''
-	},*/
-	logger:  {
+	logger: {
+		debug: function() { },
 		log: function() { },
 		warning: function() { },
 		error: function() { }

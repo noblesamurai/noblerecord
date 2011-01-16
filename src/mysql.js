@@ -21,7 +21,8 @@
 
 var sys = require('sys'),
 	mysql = require('mysql-libmysqlclient'),
-	events = require('events');
+	events = require('events'),
+	logger = require('./logger');
 
 var NobleMachine = require('./lib/noblemachine/noblemachine').NobleMachine;
 
@@ -62,12 +63,12 @@ function DbConnection (options) {
 	};
 
 	me.errorListener = function(reason) {
-		log.log('Connection error: '+reason, 'noblesql');
+		logger.log('Connection error: '+reason, 'noblesql');
 		me.closeListener(reason);
 	};
 
 	me.closeListener = function(reason) {
-		log.log('Connection closed', 'noblesql');
+		logger.log('Connection closed', 'noblesql');
 		
 		// Check if we should reconnect
 		if (me.state == states.CLOSED || me.state == states.CLOSING) {
@@ -76,12 +77,12 @@ function DbConnection (options) {
 		} else if (me.state == states.CONNECTING || me.state == states.CONNECTED) {
 			// Should we only try to connect a few times?
 			// After a delay, retry the connection
-			log.log('Connection lost in state ' + me.state + ', reconnecting', 'noblesql');
+			logger.log('Connection lost in state ' + me.state + ', reconnecting', 'noblesql');
 			setTimeout(function() {
 				me.connect().start();
 			}, 1000);
 		} else {
-			log.log('Connection closed, but unknown connection state: '+me.state, 'noblesql');
+			logger.log('Connection closed, but unknown connection state: '+me.state, 'noblesql');
 		}
 	};
 
@@ -102,7 +103,7 @@ function DbConnection (options) {
 			} else {
 				// Listen for connect event
 				var reconnected = function() {
-					log.debug('Refire!');
+					logger.debug('Refire!');
 					me.removeListener('connect', reconnected);
 					act.toNext();
 				};
@@ -119,7 +120,7 @@ function DbConnection (options) {
 	};
 
 	me.connect = function() {
-		log.debug('Connect called with state'+me.state, 'noblesql');
+		logger.debug('Connect called with state' + me.state, 'noblesql');
 		var act = new NobleMachine(function() {
 			switch (me.state) {
 				case states.CONNECTING:
@@ -139,7 +140,7 @@ function DbConnection (options) {
 				}
 			}
 
-			log.debug('Connecting to '+JSON.stringify(me.options), 'noblesql');
+			logger.debug('Connecting to '+JSON.stringify(me.options), 'noblesql');
 
             // Proper initialisation order to get RECONNECT working. Ref:
             // https://github.com/Sannis/node-mysql-libmysqlclient/issues/issue/67#issue/67/comment/567467
@@ -161,7 +162,7 @@ function DbConnection (options) {
 			me.connection.close = me.connection.closeSync;
 
 			me.state = states.CONNECTED;
-			log.log('Connected!', 'noblesql');
+			logger.log('Connected!', 'noblesql');
 			me.emitConnect();
 			act.emitSuccess();
 		});
@@ -174,7 +175,7 @@ function DbConnection (options) {
 		});
 
 		act.next(function() {
-			log.debug('Executing '+sql, 'noblesql');
+			logger.debug('Executing '+sql, 'noblesql');
 			var res = me.connection.querySync(sql);
 
 			if ('boolean' == typeof res) {
@@ -212,7 +213,7 @@ function DbConnection (options) {
 	};
 
 	me.close = function() {
-		log.log('Closing connection', 'noblesql');
+		logger.log('Closing connection', 'noblesql');
 		me.state = states.CLOSING;
 		if (undefined != me.connection) {
             try {

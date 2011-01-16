@@ -17,6 +17,7 @@
 
 var common = require('./common');
 
-exports.log = function() { common.config.logger.log.apply(this, arguments) }
-exports.warning = function() { common.config.logger.warning.apply(this, arguments) }
-exports.error = function() { common.config.logger.error.apply(this, arguments) }
+exports.debug = function() { if (common.config.logger && common.config.logger.debug) common.config.logger.debug.apply(this, arguments) }
+exports.log = function() { if (common.config.logger && common.config.logger.log) common.config.logger.log.apply(this, arguments) }
+exports.warning = function() { if (common.config.logger && common.config.logger.warning) common.config.logger.warning.apply(this, arguments) }
+exports.error = function() { if (common.config.logger && common.config.logger.error) common.config.logger.error.apply(this, arguments) }
