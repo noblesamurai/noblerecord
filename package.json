@@ -1,6 +1,6 @@
 {
 	"name"			: "noblerecord",
-	"version"		: "v1.0.0",
+	"version"		: "v1.0.1",
 	"description"	: "Asynchronous NodeJS ORM library inspired by Rails",
 	"homepage"		: "http://github.com/noblesamurai/noblerecord",
 	"keywords"		: ["mysql", "sql", "activerecord", "active-record", "orm", "database", "async", "asynchronous"],
