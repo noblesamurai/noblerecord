@@ -284,19 +284,25 @@ var Model = function(ident, defFunc) {
 	 * Executes a SELECT query on the table associated with this class and returns
 	 * the result.
 	 * @param where Qualifier to be passed to WHERE e.g "`this` = 'that'""
+	 * @param fields Fields to return. Defaults to '*'.
 	 */
-	model.select = function(where) {
+	model.select = function(where, fields) {
+		fields = fields || '*';
+
 		var act = new NobleMachine(function() {
-			var sql = "SELECT * FROM " + model.table +
+			var sql = "SELECT " + fields + " FROM " + model.table +
 					  (where.length ? " WHERE " : '') + where + ";"
 
 			act.toNext(db_query(sql));
 		});
 
 		act.next(function(result) {
-			act.toNext(result.map(function(sqlobj) {
-				return new model(sqlobj);
-			}));
+			if (result.affected_rows == -1)
+				act.toNext([]);
+			else
+				act.toNext(result.map(function(sqlobj) {
+					return new model(sqlobj);
+				}));
 		});
 
 		act.error(function(err) {
@@ -311,8 +317,9 @@ var Model = function(ident, defFunc) {
      * A very simple SELECT query wrapper that returns a list of model instances.
 	 * @param params Key-value pairs to be matched.
 	 * @param conjunction Default 'AND'.
+	 * @param fields Fields to return. Default in select().
      */
-	model.where = function(params, conjunction) {
+	model.where = function(params, conjunction, fields) {
 		conjunction = conjunction || 'AND'
 		var where = '';
 		var first = true;
@@ -334,7 +341,7 @@ var Model = function(ident, defFunc) {
 			}
 		}
 
-		return model.select(where);
+		return model.select(where, fields);
 	}
 
 	/**
