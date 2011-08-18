@@ -161,6 +161,8 @@ function DbConnection (options) {
 
 			me.connection.close = me.connection.closeSync;
 
+			me.connection.querySync('SET SESSION time_zone = "+00:00"');
+
 			me.state = states.CONNECTED;
 			logger.log('Connected!', 'noblesql');
 			me.emitConnect();
@@ -238,3 +240,5 @@ sys.inherits(DbConnection, events.EventEmitter);
 _.extend(exports, {
 	DbConnection: DbConnection,
 });
+
+/* vim: set sw=4 ts=4 noet: */
