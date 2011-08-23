@@ -83,7 +83,7 @@ function detectSQLType(col) {
 		return 'primary_key';
 	}
 
-	switch (col['DATA_TYPE']) {
+	switch (col['DATA_TYPE'].toLowerCase()) {
 		case 'varchar':
 			return 'string';
 		case 'int':
@@ -103,6 +103,8 @@ function detectSQLType(col) {
 		case 'binary':
 		case 'boolean':
 			return col['DATA_TYPE'];
+		case 'mediumtext':
+			return 'text';
 		default:
 			throw "Unsupported SQL type `" + col['DATA_TYPE'] + "`!";
 	}
@@ -118,7 +120,7 @@ function typeToSQL(type) {
 			return "VARCHAR(255)";
 
 		case 'text':
-			return "TEXT CHARACTER SET UTF8";
+			return "MEDIUMTEXT CHARACTER SET UTF8";
 
 		case 'integer':
 			return "INT";
