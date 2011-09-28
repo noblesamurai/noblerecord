@@ -86,8 +86,8 @@ If you are having difficulties, you may gain some insight into NobleRecord's beh
 
 
 ## contributors
- - [Daniel Assange](http://github.com/somnidea)
- - [Arlen Cuss](http://github.com/celtic)
+ - [Daniel Assange](http://github.com/somnidea) (link defunct)
+ - [Anneli Cuss](http://github.com/celtic)
  - You?
 
 ## license
