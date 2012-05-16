@@ -151,13 +151,14 @@ function DbConnection (options) {
             var success = me.connection.realConnectSync(me.options.host, me.options.username, me.options.password,
                                         me.options.database);
             if (!success) {
-                util.p(me.connection.connectError);
+                util.puts(util.inspect(me.connection.connectError));
                 act.emitError(me.connection.connectError);
                 return;
             }
 
-			me.connection.addListener('close', me.closeListener);
-			me.connection.addListener('error', me.errorListener);
+			console.log("TODO: close, error listeners");
+			// me.connection.addListener('close', me.closeListener);
+			// me.connection.addListener('error', me.errorListener);
 
 			me.connection.close = me.connection.closeSync;
 
