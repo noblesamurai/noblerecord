@@ -1,14 +1,17 @@
 {
-	"name"			: "noblerecord",
-	"version"		: "v1.0.1",
-	"description"	: "Asynchronous NodeJS ORM library inspired by Rails",
-	"homepage"		: "http://github.com/noblesamurai/noblerecord",
-	"keywords"		: ["mysql", "sql", "activerecord", "active-record", "orm", "database", "async", "asynchronous"],
-	"author"        : "Arlen Cuss <arlen@noblesamurai.com>",
-	"maintainers"   : ["Eugene Ware <eugene@noblesamurai.com>"],
-	"licenses"      : ["GPL"],
-    "dependencies"  : {"mysql-libmysqlclient": ">=1.2.1"},
-	"main"			: "./noblerecord",
-	"bin"			: "./nrec",
-	"repository"	: { "type": "git", "url": "http://github.com/noblesamurai/noblerecord.git" }
+  "name": "noblerecord",
+  "version": "v1.0.1",
+  "description": "Asynchronous NodeJS ORM library inspired by Rails",
+  "homepage": "http://github.com/noblesamurai/noblerecord",
+  "keywords": ["mysql", "sql", "activerecord", "active-record", "orm", "database", "async", "asynchronous"],
+  "author": "Daniel Assange <daniel@noblesamurai.com>",
+  "maintainers": ["Eugene Ware <eugene@noblesamurai.com>",  "Arlen Cuss <arlen@noblesamurai.com>"],
+  "licenses": ["GPL"],
+  "dependencies": {"mysql-libmysqlclient": ">=1.2.1"},
+  "main": "./noblerecord",
+  "bin": "./nrec",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/noblesamurai/noblerecord.git"
+  }
 }
