@@ -17,17 +17,17 @@
  */
 
 var common = require('./src/common'),
-	util = require('./src/util');
+	nrutil = require('./src/nrutil');
 
 var NobleRecord = require('./noblerecord').NobleRecord;
-var NobleMachine = require('./src/lib/noblemachine/noblemachine').NobleMachine;
+var NobleMachine = require('noblemachine').NobleMachine;
 
-var sys = require('sys');
+var util = require('util');
 
 var command = process.argv[2];
 var args = process.argv.slice(3);
 
-var sys = require('sys'),
+var util = require('util'),
 	fs = require('fs');
 
 global.NobleRecord = NobleRecord;
@@ -36,40 +36,40 @@ global.NobleRecord = NobleRecord;
 
 	function usage() {
 		if (command == undefined || command == '-h') {
-			sys.print("Usage: nrec COMMAND [ARGS]\n");
-			sys.print("\n");
-			sys.print("The following commands are supported:\n");
-			sys.print(" init            Create default configuration from template.\n");
-			sys.print(" generate        Create a new migration or recreate the schema.\n");
-			sys.print(" migrate         Run all migrations, or one at a time.\n");
-			sys.print(" load schema     Load the entire schema file, and mark all migrations as run.\n");
-			sys.print("\n");
-			sys.print("All commands can be run with -h for more information.\n");
-			sys.print("\n");
+			util.print("Usage: nrec COMMAND [ARGS]\n");
+			util.print("\n");
+			util.print("The following commands are supported:\n");
+			util.print(" init            Create default configuration from template.\n");
+			util.print(" generate        Create a new migration or recreate the schema.\n");
+			util.print(" migrate         Run all migrations, or one at a time.\n");
+			util.print(" load schema     Load the entire schema file, and mark all migrations as run.\n");
+			util.print("\n");
+			util.print("All commands can be run with -h for more information.\n");
+			util.print("\n");
 		} else if (command == 'init') {
-			sys.print("Usage: nrec init\n");
-			sys.print("\n");
-			sys.print("Creates the following paths in the current working directory:\n");
-			sys.print("  ./db/\n");
-			sys.print("  ./db/migrate/\n");
-			sys.print("  ./db/config.js\n");
-			sys.print("\n");
+			util.print("Usage: nrec init\n");
+			util.print("\n");
+			util.print("Creates the following paths in the current working directory:\n");
+			util.print("  ./db/\n");
+			util.print("  ./db/migrate/\n");
+			util.print("  ./db/config.js\n");
+			util.print("\n");
 		} else if (command == 'generate') {
-			sys.print("Usage: nrec generate [generator] [arguments]\n");
-			sys.print("\n");
-			sys.print("The following generators are supported:\n");
-			sys.print(" migration [name]      Generate a new migration with the given file identifier.\n");
-			sys.print(" schema:               Creates or recreates the current schema specification.\n");
-			sys.print("\n");
+			util.print("Usage: nrec generate [generator] [arguments]\n");
+			util.print("\n");
+			util.print("The following generators are supported:\n");
+			util.print(" migration [name]      Generate a new migration with the given file identifier.\n");
+			util.print(" schema:               Creates or recreates the current schema specification.\n");
+			util.print("\n");
 
 		} else if (command == 'migrate') {
-			sys.print("Usage: nrec migrate [dir]\n");
-			sys.print("\n");
-			sys.print("If no direction is supplied, runs all unraised migrations.\n");
-			sys.print("With a direction, runs a single migration:\n");
-			sys.print(" up      Raise the first unraised migration.\n");
-			sys.print(" down    Lower the last raised migration.\n");
-			sys.print("\n");
+			util.print("Usage: nrec migrate [dir]\n");
+			util.print("\n");
+			util.print("If no direction is supplied, runs all unraised migrations.\n");
+			util.print("With a direction, runs a single migration:\n");
+			util.print(" up      Raise the first unraised migration.\n");
+			util.print(" down    Lower the last raised migration.\n");
+			util.print("\n");
 		}
 
 	}
@@ -191,9 +191,9 @@ global.NobleRecord = NobleRecord;
 					 + "  database: ''\n"
 					 + "});\n"
 					 + "NobleRecord.config.logger = {\n"
-					 + "  log: sys.log,\n"
-					 + "  warning: sys.log,\n"
-					 + "  error: sys.log\n"
+					 + "  log: util.log,\n"
+					 + "  warning: util.log,\n"
+					 + "  error: util.log\n"
 					 + "};\n";
 
 			var fd = fs.openSync('db/config.js', 'w');
@@ -209,7 +209,7 @@ global.NobleRecord = NobleRecord;
 					var arg = process.argv.slice(4).join('_');
 					if (arg.length == 0) arg = "migration";
 
-					var filename = util.makeDateStr(date, false) + "_" + arg + ".js";
+					var filename = nrutil.makeDateStr(date, false) + "_" + arg + ".js";
 
 					var code = '';
 					code += "new NobleRecord.Migration({\n";
@@ -271,7 +271,7 @@ global.NobleRecord = NobleRecord;
 						
 						filenames.forEach(function(fn) {
 							var subact = new NobleMachine(function() {
-								subact.toNext(db.query("INSERT INTO tblSchemaMigrations SET `filename` = " + util.serialize(fn) + ";"));
+								subact.toNext(db.query("INSERT INTO tblSchemaMigrations SET `filename` = " + nrutil.serialize(fn) + ";"));
 							});
 
 							act.next(subact);

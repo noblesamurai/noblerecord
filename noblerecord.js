@@ -17,13 +17,13 @@
 
 var common = require('./src/common'),
 	migration = require('./src/migration'),
-    model = require('./src/model'),
-    util = require('./src/util')
+	model = require('./src/model'),
+	nrutil = require('./src/nrutil'),
 	mysql = require('./src/mysql');
 
 var NobleRecord = {};
 
-var sys = require('sys');
+var util = require('util');
 
 
 
@@ -36,7 +36,7 @@ NobleRecord.initialize = function() {
 }
 
 _.extend(NobleRecord, common, migration, model);
-NobleRecord.util = util;
+NobleRecord.nrutil = nrutil;
 
 exports.NobleRecord = NobleRecord;
 
