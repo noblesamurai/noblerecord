@@ -15,10 +15,10 @@
  * along with NobleRecord.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-var sys = require('sys');
+var util = require('util');
 
 var common = require('./common'),
-	util = require('./util');
+	nrutil = require('./nrutil');
 
 var logger = common.config.logger;
 
@@ -26,7 +26,7 @@ var logger = common.config.logger;
 function columnToSQL(col) {
 	var sql = "`" + col.name + "` ";
 
-	sql += util.typeToSQL(col.type);
+	sql += nrutil.typeToSQL(col.type);
 
 	if (col['additional']) {
 		sql += ' ' + col['additional'];
@@ -39,7 +39,7 @@ function columnToSQL(col) {
 	if (col['default_value'] !== undefined) {
 		var def = col['default_value']
 
-		sql += " DEFAULT " + util.serialize(def);
+		sql += " DEFAULT " + nrutil.serialize(def);
 	}
 
 	if (col.type == 'primary_key') {
@@ -217,8 +217,8 @@ var Migration = function(opts) {
 
 	if (Migration.currentFilename) {
 		me.filename = Migration.currentFilename;
-		up.act.next(db.query("INSERT INTO tblSchemaMigrations SET `filename` = " + util.serialize(me.filename) + ";"));
-		down.act.next(db.query("DELETE FROM tblSchemaMigrations WHERE `filename` = " + util.serialize(me.filename) + ";"));
+		up.act.next(db.query("INSERT INTO tblSchemaMigrations SET `filename` = " + nrutil.serialize(me.filename) + ";"));
+		down.act.next(db.query("DELETE FROM tblSchemaMigrations WHERE `filename` = " + nrutil.serialize(me.filename) + ";"));
 	}
 
 	_.extend(me, {
@@ -254,13 +254,13 @@ function makeColumnDefinition(col) {
 	}
 
 	if (col['COLUMN_DEFAULT'] != null) {
-		opts['default_value'] = util.parseSQLVal(util.detectSQLType(col), col['COLUMN_DEFAULT']);
+		opts['default_value'] = nrutil.parseSQLVal(nrutil.detectSQLType(col), col['COLUMN_DEFAULT']);
 	}
 
-	var code = "t." + util.detectSQLType(col) + "('" + col['COLUMN_NAME'] + "'";
+	var code = "t." + nrutil.detectSQLType(col) + "('" + col['COLUMN_NAME'] + "'";
 	
 	if (Object.keys(opts).length != 0) {
-		code += ", " + sys.inspect(opts) 
+		code += ", " + util.inspect(opts) 
 	}
 	
 	code += ");";

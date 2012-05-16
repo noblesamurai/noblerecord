@@ -1,3 +1,0 @@
-[submodule "src/lib/noblemachine"]
-	path = src/lib/noblemachine
-	url = git://github.com/noblesamurai/noblemachine.git

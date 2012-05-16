@@ -15,10 +15,10 @@
  * along with   If not, see <http://www.gnu.org/licenses/>.
  */
 
-var sys = require('sys');
+var util = require('util');
 
 var common = require('./common'),
-	util = require('./util'),
+	nrutil = require('./nrutil'),
 	mysql = require('./mysql'),
 	logger = require('./logger');
 
@@ -65,7 +65,7 @@ var Model = function(ident, defFunc) {
 
 				for (var key in model.columns) {
 					if ([model.primary].indexOf(key) == -1 && me[key] !== undefined) {
-						setStrs.push('`' + key + '`' + " = " + util.serialize(me[key]));
+						setStrs.push('`' + key + '`' + " = " + nrutil.serialize(me[key]));
 					}
 				}
 
@@ -182,7 +182,7 @@ var Model = function(ident, defFunc) {
 
 		// Generic setter for SQL-correspondent values. Forces typecasting for database compatibility.
 		function setValue(key, val) {
-			//sys.log(key + ": " + JSON.stringify(val));
+			//util.log(key + ": " + JSON.stringify(val));
 
 			if (val === null) {
 				me.values[key] = null;
@@ -324,7 +324,7 @@ var Model = function(ident, defFunc) {
 		var where = '';
 		var first = true;
 
-		logger.log("Finding all `" + model.ident + "`" + (params === undefined ? '' : " matching: " + sys.inspect(params) + " with conjunction '" + conjunction + "'"));
+		logger.log("Finding all `" + model.ident + "`" + (params === undefined ? '' : " matching: " + util.inspect(params) + " with conjunction '" + conjunction + "'"));
 
 		if (params) {
 			for (var key in model.columns) {
@@ -333,7 +333,7 @@ var Model = function(ident, defFunc) {
 					if (params[key] == null) {
 						where += "`" + key + "` IS NULL";
 					} else {
-						where += "`" + key + "` = " + util.serialize(params[key]);
+						where += "`" + key + "` = " + nrutil.serialize(params[key]);
 					}
 
 					first = false;

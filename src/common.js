@@ -18,9 +18,9 @@
 require('./lib/underscore');
 require('./lib/inflection');
 
-NobleMachine = require('./lib/noblemachine/noblemachine').NobleMachine;
+NobleMachine = require('noblemachine').NobleMachine;
 
-var sys = require('sys');
+var util = require('util');
 
 var mysql = require('./mysql');
 

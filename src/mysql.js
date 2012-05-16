@@ -19,12 +19,12 @@
  * Wrappings for the node-mysql-libmysqlclient library
  */
 
-var sys = require('sys'),
+var util = require('util'),
 	mysql = require('mysql-libmysqlclient'),
 	events = require('events'),
 	logger = require('./logger');
 
-var NobleMachine = require('./lib/noblemachine/noblemachine').NobleMachine;
+var NobleMachine = require('noblemachine').NobleMachine;
 
 var states = {
 	CLOSED: 0,
@@ -151,7 +151,7 @@ function DbConnection (options) {
             var success = me.connection.realConnectSync(me.options.host, me.options.username, me.options.password,
                                         me.options.database);
             if (!success) {
-                sys.p(me.connection.connectError);
+                util.p(me.connection.connectError);
                 act.emitError(me.connection.connectError);
                 return;
             }
@@ -235,7 +235,7 @@ function DbConnection (options) {
 
 	return this;
 }
-sys.inherits(DbConnection, events.EventEmitter);
+util.inherits(DbConnection, events.EventEmitter);
 
 _.extend(exports, {
 	DbConnection: DbConnection,

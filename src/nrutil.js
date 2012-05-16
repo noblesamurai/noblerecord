@@ -138,7 +138,7 @@ function typeToSQL(type) {
 	}
 }
 
-var sys = require('sys');
+var util = require('util');
 
 /**
  * Parses an SQL string into a JS object given the friendly type.
